@@ -23,7 +23,6 @@ end
 
 fprintf('%s was', filename);
 index = 1;
-c = cell(1,1);
 while ~feof(fid)
 	line = fgetl(fid);
     if index > skiprows
