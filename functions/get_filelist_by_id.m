@@ -1,6 +1,7 @@
 function filelist_by_id = get_filelist_by_id(files)
 %
 % GET_FILELIST_BY_ID: arranges filelist by each subject.
+% Ver.1.0.1    Add error message when "files" is not exist.    2016.6.14 Hoshino, E..
 %
 % INPUT
 % 	files: a path to a directory that contains files to be listed or a cell of filenames.
@@ -8,12 +9,17 @@ function filelist_by_id = get_filelist_by_id(files)
 % OUTPUT
 % 	filelist: {subject x files}.
 %
-% Version 1.0.0 on 2016.5.31 by Hoshino, E..
-% Initialize.
+% [History]
+% Ver.1.0.0    Initialize.    2016.5.31 by Hoshino, E..
+%
 % 
-if ischar(files) && exist(files, 'dir')
-	files_struct = dir(fullfile(files, '*.mat'));
-    files =  strcat(files, filesep, {files_struct.name});
+if ischar(files)
+    if exist(files, 'dir')
+        files_struct = dir(fullfile(files, '*.mat'));
+        files =  strcat(files, filesep, {files_struct.name});
+    else
+        error('Error! %s is not found. Check if the path exists or a input argument is a cell of filenames.', files);
+    end
 end
 m = regexp([files{:}], '([E|N])(\d+)\D', 'tokens');
 ids_of_files = cellfun(@(x) [x{1} repmat('0', [1 3-length(x{2})]) x{2}], m, 'UniformOutput', false);
