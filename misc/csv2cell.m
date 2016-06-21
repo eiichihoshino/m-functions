@@ -41,7 +41,9 @@ fprintf(' loaded.\n');
 
 function strdouble = str2doubleif(x)
 d = str2double(x);
-if isnan(d)
+if isempty(x)
+    strdouble = [];
+elseif isnan(d)
     strdouble = x;
 else
     strdouble = d;
