@@ -22,17 +22,24 @@ for id_i = 1:size(filelist_by_id_connectivity_all,1)
         ws = wss(max_i);
         is_sample_short = ws.connectivity.n < 1200;
         if sum(sum(triu(is_sample_short(:,:,1),1))) < total_number_of_pairs * 0.75
+            ws.connectivity.valid = true;
             ws.connectivity.r(is_sample_short) = NaN;
             ws.connectivity.z(is_sample_short) = NaN;
             ws.connectivity.p(is_sample_short) = NaN;
             ws.connectivity.pfdr(is_sample_short) = NaN;
-            [~,name,~] = fileparts(ws.filename);
-            save_filename = fullfile(use_file_path, [name '.mat']);
-            if exist('OCTAVE_VERSION', 'builtin') == 5
-                save('-mat7-binary', save_filename, 'ws');
-            else
-                save(save_filename, 'ws');
-            end
+        else
+            ws.connectivity.valid = false;
+            ws.connectivity.r = NaN;
+            ws.connectivity.z = NaN;
+            ws.connectivity.p = NaN;
+            ws.connectivity.pfdr = NaN;
+        end
+        [~,name,~] = fileparts(ws.filename);
+        save_filename = fullfile(use_file_path, [name '.mat']);
+        if exist('OCTAVE_VERSION', 'builtin') == 5
+            save('-mat7-binary', save_filename, 'ws');
+        else
+            save(save_filename, 'ws');
         end
         
         checker.didSucceed(files);
