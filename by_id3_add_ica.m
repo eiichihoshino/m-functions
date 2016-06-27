@@ -19,6 +19,6 @@ for id_i = size(filelist_by_id,1):-1:1
         id.runs(1).ICA(kk) = ms_ica(id.runs(1).data0(:,:,kk)');
     end
     [~,name,~] = fileparts(id.runs(1).filename);
-    save(fullfile(output_path, [name '.mat']), 'runs');
+    save(fullfile(output_path, [name '.mat']), 'id');
     ids(id_i) = id;
 end
