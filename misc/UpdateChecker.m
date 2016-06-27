@@ -7,7 +7,8 @@ classdef UpdateChecker < handle
 %       - m_file: mfilename of caller.
 %       - cache_path: path to cache.
 %
-% Version 1.0.0.0 on 2016.6.10 by Hoshino, E..
+% Version 1.0.1 Remove cache_path and subdirs from path. 2016.6.24 Hoshino, E..
+% Version 1.0.0 on 2016.6.10 by Hoshino, E..
 %
     properties
         m_files; %{filepath, needs_update, succeded}
@@ -16,6 +17,7 @@ classdef UpdateChecker < handle
     end
     methods
         function self = UpdateChecker(m_file, cache_path)
+            rmpath(genpath(['.' filesep cache_path]));
             self.m_files = matlab.codetools.requiredFilesAndProducts(m_file);
             self.m_files = [self.m_files' repmat({1 0}, [length(self.m_files) 1])];
             self.cache_path = cache_path;
