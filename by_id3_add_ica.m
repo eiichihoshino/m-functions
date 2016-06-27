@@ -3,7 +3,8 @@ input_path = 'by_id_check_valid';
 output_path = 'by_id_ica';
 %%%%%%%%%%%%%%%%%%
 
-addpath(genpath('.'));
+subpaths = regexp(genpath('.'), ';', 'split');
+addpath(strjoin(subpaths(cellfun(@(s) isempty(regexp(s, regexprep(strjoin({'cache', '.git'}, '|'), '\.', '\\.'))), subpaths)), ';'));
 if ~exist(output_path, 'dir')
     mkdir(output_path);
 end
