@@ -1,4 +1,5 @@
-addpath(genpath('.'));
+subpaths = regexp(genpath('.'), ';', 'split');
+addpath(strjoin(subpaths(cellfun(@(s) isempty(regexp(s, regexprep(strjoin({'cache', '.git'}, '|'), '\.', '\\.'))), subpaths)), ';'));
 connectivity_use_path = 'connectivity_use';
 demographic_data_csv = 'XXXX';
 GA_group_division = [0.01 30 37];

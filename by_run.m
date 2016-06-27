@@ -1,7 +1,8 @@
 raw_data_path = 'raw_data';
 output_file_path = 'by_run';
 
-addpath(genpath('.'));
+subpaths = regexp(genpath('.'), ';', 'split');
+addpath(strjoin(subpaths(cellfun(@(s) isempty(regexp(s, regexprep(strjoin({'cache', '.git'}, '|'), '\.', '\\.'))), subpaths)), ';'));
 if ~exist(output_file_path, 'dir')
     mkdir(output_file_path);
 end
