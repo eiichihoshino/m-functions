@@ -1,16 +1,16 @@
-raw_data_path = 'raw_data';
-output_file_path = 'by_run';
+input_dir = 'raw_data';
+output_dir = mfilename;
 
-subpaths = regexp(genpath('.'), ';', 'split');
-addpath(strjoin(subpaths(cellfun(@(s) isempty(regexp(s, regexprep(strjoin({'cache', '.git'}, '|'), '\.', '\\.'))), subpaths)), ';'));
-if ~exist(output_file_path, 'dir')
-    mkdir(output_file_path);
+subpaths = regexp(genpath('.'), pathsep, 'split');
+addpath(strjoin(subpaths(cellfun(@(s) isempty(regexp(s, regexprep(strjoin({'cache', '.git'}, '|'), '\.', '\\.'))), subpaths)), pathsep));
+if ~exist(output_dir, 'dir')
+    mkdir(output_dir);
 end
 
 %initialize UpdateChecker
-checker = UpdateChecker([mfilename '.m'], fullfile(output_file_path, 'cache'));
+checker = UpdateChecker([mfilename '.m'], fullfile(output_dir, 'cache'));
 
-filelist = get_pathlist_by_run(raw_data_path);
+filelist = get_pathlist_by_run(input_dir);
 for file_i = size(filelist,1):-1:1
 	fprintf('Processing: %d out of %d.\n', file_i, size(filelist, 1));
     if checker.needsUpdate(filelist(file_i,:));
@@ -39,7 +39,7 @@ for file_i = size(filelist,1):-1:1
 
         %Save data
         [~,name,~] = fileparts(ws.filename);	
-        save_filename = fullfile(output_file_path, [name '.mat']);
+        save_filename = fullfile(output_dir, [name '.mat']);
         save(save_filename, 'ws');
 
         checker.didSucceed(filelist(file_i,:));
