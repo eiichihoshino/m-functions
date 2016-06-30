@@ -17,7 +17,9 @@ classdef UpdateChecker < handle
     end
     methods
         function self = UpdateChecker(m_file, cache_path)
-            rmpath(genpath(['.' filesep cache_path]));
+            if ismember(cache_path,regexp(path, pathsep, 'split'))
+                rmpath(genpath(['.' filesep cache_path]));
+            end
             self.m_files = matlab.codetools.requiredFilesAndProducts(m_file);
             self.m_files = [self.m_files' repmat({1 0}, [length(self.m_files) 1])];
             self.cache_path = cache_path;

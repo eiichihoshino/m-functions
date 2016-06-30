@@ -1,7 +1,8 @@
-subpaths = regexp(genpath('.'), ';', 'split');
-addpath(strjoin(subpaths(cellfun(@(s) isempty(regexp(s, regexprep(strjoin({'cache', '.git'}, '|'), '\.', '\\.'))), subpaths)), ';'));
-input_dir = 'by_id_ica';
+subpaths = regexp(genpath('.'), pathsep, 'split');
+addpath(strjoin(subpaths(cellfun(@(s) isempty(regexp(s, regexprep(strjoin({'cache', '.git'}, '|'), '\.', '\\.'))), subpaths)), pathsep));
+input_dir = output_dir;
 demographic_data_csv = regexprep('XXX', '/', filesep);
+layout_path = regexprep('YYY', '/', filesep);
 GA_group_division = [0.01 30 37];
 figure_dir = 'Figures';
 tests = [];
@@ -106,22 +107,18 @@ saveas(h, fullfile(figure_dir, ['anova_' name '.fig']));
 saveas(h, fullfile(figure_dir, ['anova_' name '.jpg']));
 close(h);
 
-
 n_groups = length(GA_group_division);
-c_valids =  arrayfun(@(x) x.connectivity.valid, ids);
-GA_group_division_inf = [GA_group_division Inf];
-for group_i = n_groups:-1:1
-    GAs(group_i).indices = c_valids...
-        & [ids.GA] >= GA_group_division_inf(group_i)*7 ...
-        & [ids.GA] < GA_group_division_inf(group_i+1)*7;
+c_valids =  arrayfun(@(x) x.runs(1).connectivity.valid, ids);
+for g_i = n_groups:-1:1
+    GAs(g_i).indices = c_valids & ismember([ids.GA_group], g_i);
 end
 
 %Figure GA_PNA_distribution
 fig_title = 'GA_PNA_distribution';
 h = figure('Name', regexprep(fig_title, '_', ' '), 'Visible', 'off');
 hold on;
-for group_i = 1:length(GAs)
-    scatter([ids(GAs(group_i).indices).GA]/7, [ids(GAs(group_i).indices).PNA]);
+for g_i = 1:length(GAs)
+    scatter([ids(GAs(g_i).indices).GA]/7, [ids(GAs(g_i).indices).PNA]);
 end
 scatter([ids(~c_valids).GA]/7, [ids(~c_valids).PNA], 'x');
 line(repmat(GA_group_division(2), [1 2]), get(get(h, 'CurrentAxes'), 'YLim'), 'Color', [0.9 0.9 0.9]);
@@ -132,7 +129,7 @@ saveas(h,fullfile(figure_dir, 'GA_PNA.jpg'));
 close(h);
 
 
-[l, m , n] = size(ids(1).connectivity.n);
+[l, m , n] = size(ids(1).runs(1).connectivity.n);
 n_in_each_group = cellfun(@sum, {GAs.indices});
 
 %one-sample ttest
@@ -145,11 +142,11 @@ for g_i = n_groups:-1:1
     for kk = 1:n
         n_pairs = l*(m-1)/2;
         p_i = 1;
-        for ii = 1:l
+        for ii = 1:l-1
             for jj = ii+1:m
                 [~, p, ~, stats] = ...
                     ttest(...
-                    arrayfun(@(x) x.connectivity.z(ii, jj, kk), ids(GAs(g_i).indices)) ...
+                    arrayfun(@(x) x.runs(1).connectivity.z(ii, jj, kk), ids(GAs(g_i).indices)) ...
                     );
                 fprintf([repmat('\b', [1 14]) '%s of %s'], zerofill((n_groups-g_i)*n*n_pairs+(kk-1)*n_pairs+p_i, 5, ' '), zerofill(n_pairs*n*n_groups, 5, ' '));
                 p_i = p_i + 1;
@@ -166,7 +163,7 @@ for g_i = n_groups:-1:1
         pfdrs = pfdrs + pfdrs' + diag(NaN(1, l));
         ttest1s(g_i).pfdr(:,:,kk) = pfdrs;
     end
-    PlotDataPositive(ttest1s(g_i).pfdr(:,:,1), ['test1_group' num2str(g_i) '_pfdr'], 0.0001, ttest1s(g_i).t(:,:,1)>0, 'newborn3d_2d_layout.csv', figure_dir)
+    PlotData(ttest1s(g_i).pfdr(:,:,1), ['test1_group' num2str(g_i) '_pfdr'], 0.0001, ttest1s(g_i).t(:,:,1)>0, layout_path, figure_dir, false)
 end
 fprintf('\n');
 
@@ -179,11 +176,11 @@ anova.df = NaN(l, m, n);
 for kk = 1:n
     n_pairs = l*(m-1)/2;
     p_i = 1;
-    for ii = 1:l
+    for ii = 1:l-1
         for jj = ii+1:m
             y = NaN(n_groups, max(n_in_each_group));
             for g_i = 1:n_groups
-                y(g_i, 1:n_in_each_group(g_i)) = arrayfun(@(x) x.connectivity.z(ii, jj, kk), ids(GAs(g_i).indices));
+                y(g_i, 1:n_in_each_group(g_i)) = arrayfun(@(x) x.runs(1).connectivity.z(ii, jj, kk), ids(GAs(g_i).indices));
             end
             [p, tbl] = anova1(y',[],'off');
             anova.p(ii, jj, kk) = p; anova.p(jj, ii, kk) = p;
@@ -201,8 +198,7 @@ for kk = 1:n
     pfdrs = pfdrs + pfdrs' + diag(NaN(1, l));
     anova.pfdr(:,:,kk) = pfdrs;
 end
-PlotDataPositive(anova.pfdr(:,:,1), 'anova1_pfdr', 0.1, anova.F(:,:,1)>0, 'newborn3d_2d_layout.csv', figure_dir)
-
+PlotData(anova.pfdr(:,:,1), 'anova1_pfdr', 0.1, anova.F(:,:,1)>0, layout_path, figure_dir, false)
 fprintf('\n');
 
 %unpaired -t
@@ -216,12 +212,12 @@ for gc_i = size(group_combs,1):-1:1
     for kk = 1:n
         n_pairs = l*(m-1)/2;
         p_i = 1;
-        for ii = 1:l
+        for ii = 1:l-1
             for jj = ii+1:m
                 [~, p, ~, stats] = ...
                     ttest2(...
-                    arrayfun(@(x) x.connectivity.z(ii, jj, kk), ids(GAs(group_combs(gc_i, 1)).indices)) ...
-                    ,arrayfun(@(x) x.connectivity.z(ii, jj, kk), ids(GAs(group_combs(gc_i, 2)).indices)) ...
+                    arrayfun(@(x) x.runs(1).connectivity.z(ii, jj, kk), ids(GAs(group_combs(gc_i, 1)).indices)) ...
+                    ,arrayfun(@(x) x.runs(1).connectivity.z(ii, jj, kk), ids(GAs(group_combs(gc_i, 2)).indices)) ...
                     ,0.05,'both','unequal');
                 fprintf([repmat('\b', [1 14]) '%s of %s'], zerofill((n_groups-gc_i)*n*n_pairs+(kk-1)*n_pairs+p_i, 5, ' '), zerofill(n_pairs*n*n_groups, 5, ' '));
                 p_i = p_i + 1;
@@ -238,6 +234,7 @@ for gc_i = size(group_combs,1):-1:1
         pfdrs = pfdrs + pfdrs' + diag(NaN(1, l));
         ttest2s(gc_i).pfdr(:,:,kk) = pfdrs;
     end
-    PlotDataPositive(ttest2s(gc_i).pfdr(:,:,1), ['test2_group_' regexprep(num2str(group_combs(gc_i,:)), '\s', '_')  '_pfdr'], 0.05, ttest2s(gc_i).t(:,:,1)>0, 'newborn3d_2d_layout.csv', figure_dir)
+    PlotData(ttest2s(gc_i).pfdr(:,:,1), ['test2_group_' regexprep(num2str(group_combs(gc_i,:)), '\s', '_')  '_pfdr'], 0.05, ttest2s(gc_i).t(:,:,1)>0, layout_path, figure_dir, false)
 end
 fprintf('\n');
+
