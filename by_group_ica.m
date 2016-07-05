@@ -12,16 +12,24 @@ for fig_i = 1:2
 end
 
 %aggregate ICA components by channels pairs
+threshold = 1;
 fprintf('Aggregating ICA componentes:           ');
 for id_i = length(ids):-1:1
     fprintf([repmat('\b', [1 10]) '%s of %s'], zerofill(id_i, 3, ' '), zerofill(length(ids), 3, ' '));
     n_ch = length(ids(id_i).runs(1).connectivity.n);
-    ids(id_i).runs(1).connectivity.ica = NaN(n_ch,n_ch,2);
+    ids(id_i).runs(1).connectivity.ica = NaN(n_ch,n_ch,4);
     for ii = 1:n_ch-1
         for jj = ii+1:n_ch
+            %aggregate ICA components by channels pairs
             products = prod(ids(id_i).runs(1).ICA.A([ii jj], :));
-            ids(id_i).runs(1).connectivity.ica(ii, jj, :) = [max(products) min(products)];
-            ids(id_i).runs(1).connectivity.ica(jj, ii, :) = [max(products) min(products)];
+            ids(id_i).runs(1).connectivity.ica(ii, jj, 1:2) = [max(products) min(products)];
+            ids(id_i).runs(1).connectivity.ica(jj, ii, 1:2) = [max(products) min(products)];
+            
+            %count number of channel paris more than the threshold from standardized ICA components
+            zscored_A = zscore(ids(id_i).runs(1).ICA.A);
+            products = prod(zscored_A([ii jj], :));
+            ids(id_i).runs(1).connectivity.ica(ii, jj, 3:4) = [sum(products > threshold), sum(products < -threshold)];
+            ids(id_i).runs(1).connectivity.ica(jj, ii, 3:4) = ids(id_i).runs(1).connectivity.ica(jj, ii, 3:4);
         end
     end
 end
@@ -57,8 +65,6 @@ imagesc(tests{end}.pfdrs, [0 0.8]);	colorbar;    xlabel('Channels');    ylabel('
 saveas(h, fullfile(figure_dir, ['anova_' name '.fig']));
 saveas(h, fullfile(figure_dir, ['anova_' name '.jpg']));
 close(h);
-
-%
 
 %concatenate all subject data and calculate ICA
 gs(g_i).data0 = [];

@@ -34,8 +34,8 @@ not_nan = ~isnan(x)&~isnan(y);
 x = x(not_nan);
 y = y(not_nan);
 [r, p] = corrcoef(x,y);
-b = x\y;
-plot(linspace(0, max(x)),  linspace(0, max(x))*b, 'Color',  'blue');
+%b = x\y;
+%plot(linspace(0, max(x)),  linspace(0, max(x))*b, 'Color',  'blue');
 fit_vals = polyfit(x,y,1);
 plot(linspace(0, max(x)),  linspace(0, max(x))*fit_vals(1) + fit_vals(2), 'Color',  'black');
 xlim([min(x), max(x)]); xlabel('GA (week)'); ylabel('z(R)'); %title(title_name);
@@ -69,8 +69,10 @@ not_nan = ~isnan(x)&~isnan(y);
 x = x(not_nan);
 y = y(not_nan);
 [r, p] = corrcoef(x,y);
-b = x\y;
-plot(linspace(0, max(x)),  linspace(0, max(x))*b, 'Color', 'black');
+%b = x\y;
+%plot(linspace(0, max(x)),  linspace(0, max(x))*b, 'Color',  'blue');
+fit_vals = polyfit(x,y,1);
+plot(linspace(0, max(x)),  linspace(0, max(x))*fit_vals(1) + fit_vals(2), 'Color',  'black');
 xlim([0 max(x)]); xlabel('PNA (day)'); ylabel('z(R)');% title(title_name);
 ylim([-2,3]);
 legend_h = legend({...
@@ -81,19 +83,18 @@ legend_h = legend({...
 legend_h.Location = 'northeastoutside';
 saveas(h, fullfile(figure_dir, [title_name '.fig'])); saveas(h, fullfile(figure_dir, [title_name '.jpg'])); close(h);
 
-
-title_name = 'Correation between connectivity on ch2-ch39 and PNA in group23';
+title_name = 'Correation between connectivity on ch2-ch39 and CGA in group23';
 h = figure('Name', regexprep(title_name, ' ', ''));
 hold on;
 for g_i = 2:3
-    x = [ids(GAs(g_i).indices).PNA]';
+    x = [ids(GAs(g_i).indices).GA]'+[ids(GAs(g_i).indices).PNA]';
     y = arrayfun(@(x) x.runs(1).connectivity.z(2,39,1), ids(GAs(g_i).indices))';
     not_nan = ~isnan(x)&~isnan(y);
     x = x(not_nan);
     y = y(not_nan);
     scatter(x,y,[],colors(g_i,:));
 end
-x = [ids(GAs(2).indices | GAs(3).indices).PNA ]';
+x = [ids(GAs(2).indices | GAs(3).indices).GA]' + [ids(GAs(2).indices | GAs(3).indices).PNA]';
 y = arrayfun(@(x) x.runs(1).connectivity.z(2,39,1), ids(GAs(2).indices|GAs(3).indices))';
 %{
 iii = find(ismember(x, max(x)));
@@ -108,7 +109,7 @@ y = y(not_nan);
 %plot(linspace(0, max(x)),  linspace(0, max(x))*b, 'Color',  'blue');
 fit_vals = polyfit(x,y,1);
 plot(linspace(0, max(x)),  linspace(0, max(x))*fit_vals(1) + fit_vals(2), 'Color',  'black');
-xlim([0 max(x)]); xlabel('PNA (day)'); ylabel('z(R)');% title(title_name);
+xlim([min(x) max(x)]); xlabel('CGA (day)'); ylabel('z(R)');% title(title_name);
 ylim([-2,3]);
 legend_h = legend({...
     sprintf('%d<=GA<%d',GA_group_division(2), GA_group_division(3)) ...
