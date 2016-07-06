@@ -60,6 +60,9 @@ n_in_each_group = cellfun(@sum, {GAs.indices});
 [l, m , n] = size(ids(1).runs(1).connectivity.n);
 n_channels = l;
 n_pairs = l * (l-1) /2;
+for id_i = length(ids):-1:1
+    ids(id_i).CGA = ids(id_i).GA + ids(id_i).PNA;
+end
 
 %Figure GA_PNA_distribution
 fig_title = 'GA_PNA_distribution';
