@@ -5,7 +5,6 @@ if ~exist(figure_dir, 'dir')
     mkdir(figure_dir);
 end
 filelist_by_id = get_filelist_by_id(input_dir);
-
 clear ids;
 fprintf('Loading:           ');
 for mes_i = size(filelist_by_id, 1):-1:1
