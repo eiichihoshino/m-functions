@@ -43,9 +43,12 @@ if __name__ == '__main__':
 				pdDf.ix[index,'birthday'] = pd.tslib.NaT
 		else:
 			pdDf.ix[index,'birthday'] = pdDf.ix[index, 'birthday1']
+			
+	#replace - to -1 on birthWeight
+	pdDf.ix[(pdDf.birthWeight == '-'), 'birthWeight'] = -1;
 
 	#restrict columns
-	pdDf = pdDf.ix[:,['ID', 'gender', 'GA', 'birthday']]
+	pdDf = pdDf.ix[:,['ID', 'gender', 'GA', 'birthday', 'birthWeight']]
 
 
 	#clean pdDf
