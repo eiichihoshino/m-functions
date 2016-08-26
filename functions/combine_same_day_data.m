@@ -8,7 +8,10 @@ function new_wave_structs = combine_same_day_data(wave_structs)
 % OUTPUT
 % 	new_wave_structs: new_wave_structs
 %
-% Version 1.0.0.3 on 2016.6.10 by Hoshino, E..
+% [History]
+% v.1.0.4, Hoshino, 2016.8.36. Change combining fields more general,
+% specific fields to 'data' and onward.
+% v.1.0.3, Hoshino, 2016.6.10.
 %
 new_wave_structs = wave_structs(1);
 new_wave_structs(1) = [];
@@ -20,10 +23,10 @@ for ii = 1:length(unique_datetimes)
         if jj == 1
             new_wave_structs(ii) = wave_structs(indices(jj));
         else
-            new_wave_structs(ii).data = [new_wave_structs(ii).data; wave_structs(indices(jj)).data;];
-            new_wave_structs(ii).data0 = [new_wave_structs(ii).data0; wave_structs(indices(jj)).data0;];
-            new_wave_structs(ii).artifact_marks_by_channel = [new_wave_structs(ii).artifact_marks_by_channel; wave_structs(indices(jj)).artifact_marks_by_channel;];
-            new_wave_structs(ii).artifact_marks_for_all_channels = [new_wave_structs(ii).artifact_marks_for_all_channels; wave_structs(indices(jj)).artifact_marks_for_all_channels;];
+            flds = fieldnames(wave_structs);
+            for fld = flds(find(ismember(flds, 'data')):end)
+                new_wave_structs(ii).(fld{1}) = [new_wave_structs(ii).(fld{1}); wave_structs(indices(jj)).(fld{1});];
+            end
         end
     end
 end

@@ -10,8 +10,8 @@ function new_artifact_marks = artifact_mark_extend(artifact_marks, pre_period, p
 % OUTPUT
 % 	new_artifact_marks: boolean array of the same shape as input "data". 1 if artifact is detected.
 %
-% Version 1.0.0 on 2016.5.30 by Hoshino, E..
-% Initialize.
+% [History]
+% v.1.0.0, Hoshino, 2016.5.30. Initialize.
 %
 size_of_artifact_marks = size(artifact_marks); 
 artifact_marks_2d = reshape(artifact_marks, [size_of_artifact_marks(1) prod(size_of_artifact_marks(2:end))]);

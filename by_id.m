@@ -1,5 +1,5 @@
 %%% parameters %%%
-input_dir = output_dir;
+%input_dir;
 output_dir = mfilename;
 %%%%%%%%%%%%%%%%%%
 
@@ -23,7 +23,7 @@ for id_i = 1:size(filelist_by_id,1)
         %load a run
         for mes_i = length(files):-1:1
             load(files{mes_i});
-            runs(mes_i) = ws;
+            runs(mes_i) = S;
         end
         
         %combine same day data

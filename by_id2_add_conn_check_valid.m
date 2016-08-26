@@ -1,5 +1,5 @@
 %%% parameters %%%
-input_dir = output_dir;
+%input_dir = output_dir;
 output_dir = mfilename;
 %%%%%%%%%%%%%%%%%%
 
