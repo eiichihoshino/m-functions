@@ -1,6 +1,7 @@
 function wave_struct=load_data_by_run_from_csvs(filenames)
 %
 % LOAD_DATA_BY_RUN_FROM_CSVS: loads and combines data from files.
+% Ver. 1.0.3 Add a line to ignore empty inputs. 2016.10.6 Hoshino, E.
 %
 % INPUT
 % 	filenames: filepath to be loaded.
@@ -12,8 +13,10 @@ function wave_struct=load_data_by_run_from_csvs(filenames)
 % 	wave_struct.data: {timepoints, channels}
 % 	wave_struct.stim: stimulus marks.
 %
-% Version 1.0.0.2 on 2016.6.1 by Hoshino, E..
+% [History]
+% Ver. 1.0.2 on 2016.6.1 Hoshino, E.
 %
+filenames = filenames(~cellfun(@isempty, filenames));
 filename_heads = cellfun(@(x) x(1:end-5), filenames, 'UniformOutput', false);
 filename_heads = unique(filename_heads);
 if length(filename_heads) > 1
