@@ -3,7 +3,7 @@ function artifact_marks = artifact_detect_by_signal_change(data, threshold, time
 % ARTEFACT_DECTECT_BY_SIGNAL_CHANGE: detects artifacts as signal change more than "threshold" within "time_point_difference".
 %
 % INPUT
-% 	data: an array. This function acts along the first array dimension whose size does not equal 1.
+% 	data: an array. This function acts along the first array dimension.
 %	threshold: detects if more than this value. 
 % 	time_point_difference: detects if signal_change occurs within this value.
 %

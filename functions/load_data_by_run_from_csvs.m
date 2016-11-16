@@ -40,12 +40,12 @@ wave_struct.wavelength = [wave_structs(:).wavelength];
 wave_struct.data = [wave_structs(:).data];
 wave_struct.stim = wave_structs(1).stim;
 
-function wave_struct=load_data_from_csv(filename)
-wave_struct.filename = filename;
-wave_struct.datetime = [];
-wave_struct.wavelength = [];
-wave_struct.data = [];
-wave_struct.stim = [];
+function ws=load_data_from_csv(filename)
+ws.filename = filename;
+ws.datetime = [];
+ws.wavelength = [];
+ws.data = [];
+ws.stim = [];
 
 fid = fopen(filename);
 if fid == -1
@@ -57,32 +57,41 @@ fprintf('%s was', filename);
 index = 1;
 while ~feof(fid)
     line = fgetl(fid);
-    if regexp(line, '^Date')
+    if regexp(line, '^AnalyzeMode')
         elems = regexp(line, ',', 'split');
-        wave_struct.datetime = elems{2};
+        if ~regexp(elems{2}, '^Contin')
+            warning('MyComponent:debug', '"AnnalyzeMode" of %s is not "Continuous".', filename);
+            return;
+        end
+    elseif regexp(line, '^Date')
+        elems = regexp(line, ',', 'split');
+        ws.datetime = elems{2};
     elseif regexp(line, '^Wave\ Length')
         wavelengths = regexp(line, '(?<=\().+?(?=\))', 'match');
-        wave_struct.wavelength = cell2mat(cellfun(@str2double, wavelengths, 'UniformOutput', false));
+        ws.wavelength = cell2mat(cellfun(@str2double, wavelengths, 'UniformOutput', false));
     elseif regexp(line, '^Probe')
         elems = regexp(line, ',', 'split');
         column_index_of_mark = find(ismember(elems, 'Mark'));
+        %column_index_of_BodyMovement = find(ismember(elems, 'BodyMovement'));
+        %column_index_of_RemovalMark = find(ismember(elems, 'RemovalMark'));
+        %column_index_of_PreScan = find(ismember(elems, 'PreScan'));
     elseif regexp(line, '^1,')
         isSD = cellfun(@(x) isnan(str2double(x)), regexp(line, ',','split'), 'UniformOutput', false);
         SD = {'%f', '%s'};
         fseek(fid, 0, 'bof');
-        data = textscan(fid, [SD{cell2mat(isSD)+1}], 'Delimiter', ',', 'Headerlines', index-1);
-    end
-    if ~isempty(wave_struct.wavelength)
-        wave_struct.data = [data{1, 2:length(wave_struct.wavelength)+1}];
-    else
-        warning('A line start with "Wave Length" was not found.');
-    end
-    if exist('column_index_of_mark', 'var') && ~isempty(column_index_of_mark)
-        wave_struct.stim = data{:, column_index_of_mark};
-    else
-        warning('A column name "Mark" was not found in a line start with Probe."');
+        ws.data = textscan(fid, [SD{cell2mat(isSD)+1}], 'Delimiter', ',', 'Headerlines', index-1);
     end
     index = index + 1;
 end
 fclose(fid);
+if exist('column_index_of_mark', 'var') && ~isempty(column_index_of_mark)
+    ws.stim = ws.data{:, column_index_of_mark};
+else
+    warning('MyComponent:debug', 'A column name "Mark" was not found in a line start with Probe."');
+end
+if ~isempty(ws.wavelength)
+    ws.data = [ws.data{1, 2:length(ws.wavelength)+1}];
+else
+    warning('MyComponent:debug', 'A line start with "Wave Length" was not found.');
+end
 fprintf(' loaded.\n');
